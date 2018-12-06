@@ -1,26 +1,27 @@
 import java.util.ArrayList;
+import java.lang.Math;
 
-public class Hashtable<K,V> {
+public class Hashtable<K,V>{
         class HashNode<K,V>{
-            K key;
-            V value;
+            String key;
+            String value;
             public HashNode<K,V> next;
-            public HashNode(K key, V value){
+            public HashNode(String key, String value){
                 this.key = key;
                 this.value = value;
                 this.next = null;
             }
         }
-        private ArrayList<HashNode<K,V>> buckets;
+        private HashNode[] buckets;
         private int num_buckets;
         private int size;
 
         public Hashtable(){
-            num_buckets = 20270;
+            num_buckets = 250000;
             size = 0;
-            buckets = new ArrayList<>();
+            buckets = new HashNode[num_buckets];
             for(int i = 0; i < num_buckets; i++){
-                buckets.add(null);
+                buckets[i]=null;
             }
         }
 
@@ -28,15 +29,15 @@ public class Hashtable<K,V> {
 
         public boolean isEmpty(){ return size()==0;}
 
-        private int getBucket(K key){
-            int code = key.hashCode();
+        private int getBucket(String key){
+            int code = Math.abs(key.hashCode());
             code%= num_buckets;
             return code;
         }
 
-        public Object find(K key){
+        public Object find(String key){
             int bucket_id = getBucket(key);
-            HashNode<K,V> node = buckets.get(bucket_id);
+            HashNode node = buckets[bucket_id];
             while(node!=null){
                 if(node.key.equals(key)){
                     return node.value;
@@ -45,9 +46,9 @@ public class Hashtable<K,V> {
             }
             return null; //if not found
         }
-        public void add(K key, V value){
+        public void add(String key, String value){
             int bucket_id = getBucket(key);
-            HashNode<K,V> node = buckets.get(bucket_id);
+            HashNode node = buckets[bucket_id];
             while(node!=null) {
                 if (node.key.equals(key)) {
                     node.value = value;
@@ -56,38 +57,40 @@ public class Hashtable<K,V> {
                 node = node.next;
             }
             size++;
-            node = buckets.get(bucket_id);
-            HashNode<K,V> newnode = new HashNode<>(key, value);
+            node = buckets[bucket_id];
+            HashNode newnode = new HashNode(key, value);
             newnode.next = node;
-            buckets.set(bucket_id, newnode);
+            buckets[bucket_id] = newnode;
         }
 
-        public V remove(K key){
+        public String remove(String key){
             int bucket_id = getBucket(key);
-            HashNode<K,V> head = buckets.get(bucket_id);
-            HashNode<K,V> prev = null;
-            while(head !=null){
-                if( head.key==key)
-                    break;
+            HashNode head = buckets[bucket_id];
+            HashNode prev = null;
+            while(head !=null && !head.key.equals(key)){
+                //if( head.key.equals(key))
+                  //  break;
                 prev = head;
                 head = head.next;
             }
-            if(head == null){
-                return null;
-            }
-            size--;
-            if(prev != null){
-                prev.next =head.next;
-            }
-            else{
-                buckets.set(bucket_id, head.next);
+            if( head.key.equals(key)) {
+                if (head == null) {
+                    return null;
+                }
+                if (prev == null) {
+                    buckets[bucket_id] = head.next;
+
+                    size--;
+                } else {
+                    prev.next = head.next;
+                }
             }
             return head.value;
         }
 
-        public boolean containsKey(K key){
+        public boolean containsKey(String key){
             int bucket_id = getBucket(key);
-            HashNode<K,V> node = buckets.get(bucket_id);
+            HashNode node = buckets[bucket_id];
             while(node!=null){
                 if(node.key.equals(key)){
                     return true;
